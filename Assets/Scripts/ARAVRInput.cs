@@ -1,5 +1,5 @@
 #define PC
-//#define Oculus
+// #define Oculus
 
 using System.Collections;
 using System.Collections.Generic;
@@ -192,7 +192,12 @@ public class ARAVRInput
      public static bool Get(Button virtualMask, Controller hand = Controller.RTouch)
      {
 #if PC
-        // virtualMask에 들어온 값을 ButtonTarget 타입으로 변환해 전달한다.
+        // ── [추가] PC 모드: 왼쪽 컨트롤러 Y(Two)→Q키, X(One)→E키로 매핑 ──
+        if (hand == Controller.LTouch)
+        {
+            if (virtualMask == Button.Two)  return Input.GetKey(KeyCode.Q); // Y버튼
+            if (virtualMask == Button.One)  return Input.GetKey(KeyCode.E); // X버튼
+        }
         return Input.GetButton(((ButtonTarget)virtualMask).ToString());
 #elif Oculus
          return OVRInput.Get((OVRInput.Button)virtualMask, (OVRInput.Controller)hand);
@@ -203,6 +208,12 @@ public class ARAVRInput
      public static bool GetDown(Button virtualMask, Controller hand = Controller.RTouch)
      {
 #if PC
+        // ── [추가] PC 모드: 왼쪽 컨트롤러 Y(Two)→Q키, X(One)→E키로 매핑 ──
+        if (hand == Controller.LTouch)
+        {
+            if (virtualMask == Button.Two)  return Input.GetKeyDown(KeyCode.Q);
+            if (virtualMask == Button.One)  return Input.GetKeyDown(KeyCode.E);
+        }
          return Input.GetButtonDown(((ButtonTarget)virtualMask).ToString());
 #elif Oculus
          return OVRInput.GetDown((OVRInput.Button)virtualMask, (OVRInput.Controller)hand);

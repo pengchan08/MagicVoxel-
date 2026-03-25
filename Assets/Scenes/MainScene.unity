@@ -2646,7 +2646,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!65 &483843565
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -3889,6 +3889,24 @@ MonoBehaviour:
   voxelPoolSize: 20
   createTime: 0.1
   crosshair: {fileID: 1338398824}
+  paintColors:
+  - {r: 1, g: 0, b: 0, a: 1}
+  - {r: 1, g: 0.5, b: 0, a: 1}
+  - {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  - {r: 0, g: 1, b: 0, a: 1}
+  - {r: 0, g: 1, b: 1, a: 1}
+  - {r: 0, g: 0, b: 1, a: 1}
+  - {r: 0.5, g: 0, b: 1, a: 1}
+  - {r: 1, g: 1, b: 1, a: 1}
+  - {r: 0, g: 0, b: 0, a: 1}
+  paintSizes:
+  - 0.05
+  - 0.1
+  - 0.2
+  - 0.35
+  - 0.5
+  minDistanceRatio: 0.6
+  skyPaintDistance: 3
 --- !u!4 &745061171
 Transform:
   m_ObjectHideFlags: 0
