@@ -3887,7 +3887,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   voxelFactory: {fileID: 8124978163430219570, guid: bb21ed2d15f4ef14bb8c7af696ce28e6, type: 3}
   voxelPoolSize: 20
-  createTime: 0.1
+  createTime: 0
   crosshair: {fileID: 1338398824}
   paintColors:
   - {r: 1, g: 0, b: 0, a: 1}
@@ -3905,8 +3905,8 @@ MonoBehaviour:
   - 0.2
   - 0.35
   - 0.5
-  minDistanceRatio: 0.6
-  skyPaintDistance: 3
+  minDistanceRatio: 0
+  defaultPaintDistance: 0
 --- !u!4 &745061171
 Transform:
   m_ObjectHideFlags: 0
