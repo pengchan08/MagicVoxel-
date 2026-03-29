@@ -93,7 +93,6 @@ public class VoxelMaker : MonoBehaviour
                 Vector3 spawnPos;
                 if (Physics.Raycast(ray, out hitInfo))
                 {
-                    // 표면에 닿았을 때: 법선 방향으로 살짝 띄워 배치
                     spawnPos = hitInfo.point + hitInfo.normal * (paintSizes[sizeIndex] * 0.5f);
                     lastHitDistance = hitInfo.distance;
                 }
