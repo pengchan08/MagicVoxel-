@@ -351,19 +351,7 @@ public class ARAVRInput
              distance = (crosshair.position - ray.origin).magnitude;
              crosshair.localScale = originScale * Mathf.Max(1, distance);
          }
-     }
-    
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+        }
 }
 
 // ARAVRInput 클래스에서 사용할 코루틴 객체
