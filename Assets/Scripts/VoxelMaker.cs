@@ -39,8 +39,12 @@ public class VoxelMaker : MonoBehaviour
 
     private Vector3 lastPaintPosition = Vector3.positiveInfinity;
     public float minDistanceRatio = 0f;
-    private float lastHitDistance = 3.0f;
+    private float lastHitDistance;
+
     public float defaultPaintDistance = 3.0f;
+
+    private LineRenderer lineRenderer;
+    public float rayVisualLength = 5.0f;
 
 
     void Start()
@@ -53,6 +57,15 @@ public class VoxelMaker : MonoBehaviour
             voxel.SetActive(false);
             voxelPool.Add(voxel);
         }
+
+        lineRenderer = gameObject.AddComponent<LineRenderer>();
+        lineRenderer.positionCount = 2;
+        lineRenderer.startWidth = 0.005f;
+        lineRenderer.endWidth   = 0.002f;
+        lineRenderer.startColor = Color.white;
+        lineRenderer.endColor   = new Color(1f, 1f, 1f, 0f);
+        lineRenderer.material   = new Material(Shader.Find("Sprites/Default"));
+        lineRenderer.useWorldSpace = true;
     }
 
     void Update()
@@ -60,6 +73,7 @@ public class VoxelMaker : MonoBehaviour
         // 크로스헤어 그리기
         ARAVRInput.DrawCrosshair(crosshair);
 
+        // 왼쪽 Y버튼 → 색상 순환
         bool yButton = ARAVRInput.Get(ARAVRInput.Button.Two, ARAVRInput.Controller.LTouch);
         if (yButton && !prevYButton)
         {
@@ -68,6 +82,7 @@ public class VoxelMaker : MonoBehaviour
         }
         prevYButton = yButton;
 
+        // 왼쪽 X버튼 → 크기 순환
         bool xButton = ARAVRInput.Get(ARAVRInput.Button.One, ARAVRInput.Controller.LTouch);
         if (xButton && !prevXButton)
         {
@@ -76,28 +91,32 @@ public class VoxelMaker : MonoBehaviour
         }
         prevXButton = xButton;
 
+        // 컨트롤러 위치/방향으로 레이 생성
+        Ray ray = new Ray(ARAVRInput.RHandPosition, ARAVRInput.RHandDirection);
+        RaycastHit hitInfo;
+
+        UpdateRayVisual(ray);
+
         // 사용자가 마우스를 클릭한 지점에 복셀 1개 생성
         // 1. 사용자 마우스 클릭
         //if (Input.GetButtonDown("Fire1"))
+        // 오른쪽 A버튼(RTouch)만 페인팅
         if (ARAVRInput.Get(ARAVRInput.Button.One, ARAVRInput.Controller.RTouch))
         {
             currentTime += Time.deltaTime;
             if (currentTime > createTime)
             {
-                // 2. 바닥 위치 확인
-                // Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-                // 2) 컨트롤러가 향하는 방향으로 시선 만들기
-                Ray ray = new Ray(ARAVRInput.RHandPosition, ARAVRInput.RHandDirection);
-                RaycastHit hitInfo;
-
                 Vector3 spawnPos;
                 if (Physics.Raycast(ray, out hitInfo))
                 {
+                    // 표면에 닿았을 때: 법선 방향으로 살짝 띄워 배치
                     spawnPos = hitInfo.point + hitInfo.normal * (paintSizes[sizeIndex] * 0.5f);
+                    // hit 거리 저장 → miss 시 같은 거리 앞에 이어서 그리기 위함
                     lastHitDistance = hitInfo.distance;
                 }
                 else
                 {
+                    // 허공/하늘: ray 방향으로 lastHitDistance 앞에 배치
                     spawnPos = ray.origin + ray.direction * lastHitDistance;
                 }
 
@@ -135,5 +154,30 @@ public class VoxelMaker : MonoBehaviour
             currentTime = createTime;
             lastPaintPosition = Vector3.positiveInfinity;
         }
+    }
+
+    void UpdateRayVisual(Ray ray)
+    {
+        if (lineRenderer == null) return;
+
+        Vector3 startPos = ray.origin;
+        Vector3 endPos;
+
+        RaycastHit hit;
+        if (Physics.Raycast(ray, out hit, rayVisualLength))
+            endPos = hit.point;
+        else
+            endPos = ray.origin + ray.direction * rayVisualLength;
+
+        lineRenderer.SetPosition(0, startPos);
+        lineRenderer.SetPosition(1, endPos);
+
+        // 현재 색상으로 레이 색도 함께 변경
+        lineRenderer.startColor = paintColors[colorIndex];
+        lineRenderer.endColor   = new Color(
+            paintColors[colorIndex].r,
+            paintColors[colorIndex].g,
+            paintColors[colorIndex].b,
+            0f);
     }
 }
