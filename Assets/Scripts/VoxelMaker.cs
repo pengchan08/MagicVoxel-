@@ -40,9 +40,10 @@ public class VoxelMaker : MonoBehaviour
     private Vector3 lastPaintPosition = Vector3.positiveInfinity;
     public float minDistanceRatio = 0f;
     private float lastHitDistance;
-
     public float defaultPaintDistance = 3.0f;
+    public float rayMinDistance = 0.15f;
 
+    // 레이 시각화용 LineRenderer
     private LineRenderer lineRenderer;
     public float rayVisualLength = 5.0f;
 
@@ -58,6 +59,7 @@ public class VoxelMaker : MonoBehaviour
             voxelPool.Add(voxel);
         }
 
+        // LineRenderer 자동 생성
         lineRenderer = gameObject.AddComponent<LineRenderer>();
         lineRenderer.positionCount = 2;
         lineRenderer.startWidth = 0.005f;
@@ -91,33 +93,34 @@ public class VoxelMaker : MonoBehaviour
         }
         prevXButton = xButton;
 
-        // 컨트롤러 위치/방향으로 레이 생성
-        Ray ray = new Ray(ARAVRInput.RHandPosition, ARAVRInput.RHandDirection);
-        RaycastHit hitInfo;
+        Vector3 handPos = ARAVRInput.RHandPosition;
+        Vector3 handDir = ARAVRInput.RHandDirection;
+        Ray ray = new Ray(handPos, handDir);
 
+        // 레이 시각화
         UpdateRayVisual(ray);
 
-        // 사용자가 마우스를 클릭한 지점에 복셀 1개 생성
-        // 1. 사용자 마우스 클릭
-        //if (Input.GetButtonDown("Fire1"))
-        // 오른쪽 A버튼(RTouch)만 페인팅
+        // 오른쪽 A버튼(RTouch)으로 페인팅
         if (ARAVRInput.Get(ARAVRInput.Button.One, ARAVRInput.Controller.RTouch))
         {
             currentTime += Time.deltaTime;
             if (currentTime > createTime)
             {
                 Vector3 spawnPos;
-                if (Physics.Raycast(ray, out hitInfo))
+
+                Vector3 raycastOrigin = handPos + handDir * rayMinDistance;
+                Ray offsetRay = new Ray(raycastOrigin, handDir);
+                RaycastHit hitInfo;
+
+                if (Physics.Raycast(offsetRay, out hitInfo))
                 {
-                    // 표면에 닿았을 때: 법선 방향으로 살짝 띄워 배치
                     spawnPos = hitInfo.point + hitInfo.normal * (paintSizes[sizeIndex] * 0.5f);
-                    // hit 거리 저장 → miss 시 같은 거리 앞에 이어서 그리기 위함
-                    lastHitDistance = hitInfo.distance;
+                    // 실제 거리 = offset 거리 + raycast 거리
+                    lastHitDistance = rayMinDistance + hitInfo.distance;
                 }
                 else
                 {
-                    // 허공/하늘: ray 방향으로 lastHitDistance 앞에 배치
-                    spawnPos = ray.origin + ray.direction * lastHitDistance;
+                    spawnPos = handPos + handDir * lastHitDistance;
                 }
 
                 float minDist = paintSizes[sizeIndex] * minDistanceRatio;
@@ -160,19 +163,18 @@ public class VoxelMaker : MonoBehaviour
     {
         if (lineRenderer == null) return;
 
-        Vector3 startPos = ray.origin;
         Vector3 endPos;
-
         RaycastHit hit;
-        if (Physics.Raycast(ray, out hit, rayVisualLength))
+        Vector3 raycastOrigin = ray.origin + ray.direction * rayMinDistance;
+
+        if (Physics.Raycast(new Ray(raycastOrigin, ray.direction), out hit, rayVisualLength))
             endPos = hit.point;
         else
             endPos = ray.origin + ray.direction * rayVisualLength;
 
-        lineRenderer.SetPosition(0, startPos);
+        lineRenderer.SetPosition(0, ray.origin);
         lineRenderer.SetPosition(1, endPos);
 
-        // 현재 색상으로 레이 색도 함께 변경
         lineRenderer.startColor = paintColors[colorIndex];
         lineRenderer.endColor   = new Color(
             paintColors[colorIndex].r,
